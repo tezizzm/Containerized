@@ -1,0 +1,97 @@
+﻿@using System.Collections
+@using System.Runtime.InteropServices
+@using System.IO
+@using System.Diagnostics
+
+@{
+    ViewData["Title"] = "Home page";
+    var process = Process.GetCurrentProcess();
+    var machEnvVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+    var processEnvVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
+    var userEnvVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.User);
+}
+
+<div class="text-center">
+    <h1 class="display-4">.NET Core Execution Environment</h1>
+
+    <h5>Environment</h5>
+    <p>@RuntimeInformation.FrameworkDescription</p>
+    <p>@RuntimeInformation.OSDescription @RuntimeInformation.OSArchitecture</p>
+</div>
+
+<div>
+    <h5 class="text-center">Metrics</h5>
+    <table align="center" width="500" class="table-striped table-hover">
+        <tr>
+            <td>Containerized</td>
+            <td>@(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") is object ? "true" : "false")</td>
+        </tr>
+        <tr>
+            <td>CPU cores</td>
+            <td>@Environment.ProcessorCount</td>
+        </tr>
+        @if (RuntimeInformation.OSDescription.StartsWith("Linux") && Directory.Exists("/sys/fs/cgroup/memory"))
+        {
+            <tr>
+                <td>cgroup memory usage</td>
+                <td>@File.ReadAllLines("/sys/fs/cgroup/memory/memory.usage_in_bytes")[0]</td>
+            </tr>
+        }
+        <tr>
+            <td>Memory, current usage (bytes)</td>
+            <td>@process.WorkingSet64</td>
+        </tr>
+        <tr>
+            <td>Memory, max available (bytes)</td>
+            <td>@process.MaxWorkingSet</td>
+        </tr>
+    </table>
+</div>
+<br />
+@if (userEnvVariables.Count > 0)
+{
+    <h5 class="text-center">User Environment Variables</h5>
+    <div class="table-responsive">
+        <table class="table-striped table-hover">
+            @foreach (DictionaryEntry envVariable in userEnvVariables)
+            {
+                <tr>
+                    <td>@envVariable.Key</td>
+                    <td>@envVariable.Value</td>
+                </tr>
+            }
+        </table>
+    </div>
+}
+<br />
+@if (processEnvVariables.Count > 0)
+{
+    <h5 class="text-center">Process Environment Variables</h5>
+    <div class="table-responsive">
+        <table align="center" class="table-striped table-hover">
+            @foreach (DictionaryEntry envVariable in processEnvVariables)
+            {
+                <tr>
+                    <td>@envVariable.Key</td>
+                    <td>@envVariable.Value</td>
+                </tr>
+            }
+        </table>
+    </div>
+}
+<br />
+@if (machEnvVariables.Count > 0)
+{
+    <h5 class="text-center">Machine Environment Variables</h5>
+    <div class="table-responsive">
+        <table align="center" class="table-striped table-hover">
+            @foreach (DictionaryEntry envVariable in machEnvVariables)
+            {
+                <tr>
+                    <td>@envVariable.Key</td>
+                    <td>@envVariable.Value</td>
+                </tr>
+            }
+        </table>
+    </div>
+}
